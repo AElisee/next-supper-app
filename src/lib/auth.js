@@ -5,6 +5,7 @@ import credentialsProvider from "next-auth/providers/credentials";
 import { connectToDb } from "./dbConnexion.js";
 import { User } from "./models.js";
 import bcrypt from "bcrypt";
+import { authConfig } from "./auth.config.js";
 
 const login = async (credentials) => {
   try {
@@ -12,7 +13,7 @@ const login = async (credentials) => {
     const user = await User.findOne({ email: credentials.email });
 
     if (!user) {
-      throw new Error("Mauvais indentifiants");
+      throw new Error("Mauvais identifiants");
     }
 
     const isPwdCoorect = await bcrypt.compare(
@@ -21,23 +22,25 @@ const login = async (credentials) => {
     );
 
     if (!isPwdCoorect) {
-      throw new Error("Mauvais indentifiants");
+      throw new Error("Mauvais identifiants");
     }
 
     return user;
   } catch (error) {
     console.log(error);
-    throw new Error("failed to login");
   }
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // ajouter pour le middlware
+  ...authConfig,
+  // --
   providers: [
     GitHub({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
     }),
-    // pour se connecter
+    // pour se connecter avec credentials
     credentialsProvider({
       async authorize(credentials) {
         try {
@@ -74,5 +77,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return true;
     },
+    // ajouter pour le middlware
+    ...authConfig.callbacks,
+    // --
   },
 });

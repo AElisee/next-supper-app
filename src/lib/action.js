@@ -13,12 +13,16 @@ export const handleLogout = async () => {
   await signOut();
 };
 
-export const register = async (formData) => {
+export const register = async (previousState, formData) => {
   const { username, email, password, cpassword, img } =
     Object.fromEntries(formData);
 
+  if ((!username, !email, !password, !cpassword)) {
+    return { error: "Tous les champs sont obligatoire" };
+  }
+
   if (password !== cpassword) {
-    return "Les mots de passe ne correspondent pas !";
+    return { error: "Les mots de passe ne correspondent pas !" };
   }
 
   try {
@@ -26,7 +30,7 @@ export const register = async (formData) => {
 
     const user = await User.findOne({ username });
     if (user) {
-      return "Ce nom d'utilisateur existe déjà !";
+      return { error: "Cet utilisateur existe déjà !" };
     }
     // bcrypt
     const salt = bcrypt.genSaltSync(10);
@@ -34,26 +38,30 @@ export const register = async (formData) => {
     //---
 
     const newUser = await new User({
+      
       username,
       email,
       password: hashedPassword,
       img,
     });
     await newUser.save();
-    console.log("nouvel utilisateur ajouté");
+    // console.log("nouvel utilisateur ajouté");
+    return { success: true };
   } catch (error) {
     console.log(error);
     return { error: "L'inscription n'a pas réussi !" };
   }
 };
 
-export const login = async (formData) => {
+export const login = async (previousState, formData) => {
   const { email, password } = Object.fromEntries(formData);
 
   try {
     await signIn("credentials", { email, password });
   } catch (error) {
-    console.log(error);
-    return { error: "L'inscription n'a pas réussi !" };
+    if (error.name == "CredentialsSignin") {
+      return { error: "Email ou mot de passe invalide !" };
+    }
+    throw error;
   }
 };

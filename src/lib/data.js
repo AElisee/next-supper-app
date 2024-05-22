@@ -4,7 +4,6 @@ import { Post, User } from "./models.js";
 
 import { unstable_noStore as noStore } from "next/cache";
 
-
 // ---  LES FONCTION POUR LES OBTENIR LES DONNES DANS CE FICHIER SONT A UTILISER LOSQU'ON N'UTILISE PAS D'API POUR LES DATAS
 export const getPosts = async () => {
   noStore();
@@ -51,7 +50,7 @@ export const getUser = async (id) => {
   }
 };
 
-
+// FORMAT DATE
 export const DateFormater = (dateString) => {
   const options = {
     year: "numeric",
